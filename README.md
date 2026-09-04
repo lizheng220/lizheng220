@@ -1,62 +1,62 @@
 # Hi, I'm Brent 👋
 
-**AI Agent 工程 + 后端。** 关注的问题是同一个：**怎么让一个系统在没人盯着的时候，把活干完 —— 而不是悄悄干错。**
+**AI agent engineering + backend.** Both sides of my work come down to the same question: **how do you get a system to finish the job when nobody is watching — instead of quietly getting it wrong?**
 
-在 Agent 这边，这意味着权限边界、上下文管理和可被证伪的验收判据；在后端那边，意味着幂等、拒写护栏和数据一致性。两边的失败模式其实长得一样：**静默降级永远比崩溃更贵。**
-
----
-
-## 🤖 AI Agent 工程
-
-把 Agent 从"能调用工具"推到"能独立交付一个工单"。
-
-**权限边界不靠自觉，靠工具层。**
-多角色协作链路 `researcher → critic → executor → verifier`，每个角色一份工具白名单 —— 审查者和验证者**在工具层就写不了文件**，越权不是被规则禁止，是物理上做不到。
-
-**判据必须能证伪。**
-"让它跑起来"不是判据。"先写一个能复现的失败测试，再让它变绿"才是。每一步都带 verify，Agent 才可能自主跑完全程而不需要人在每一步回车。
-
-**先预测，再验证。**
-跑之前写下预期结果，用差值验收。**看到绿灯就算过，是最贵的错觉** —— 绿灯只说明没崩，不说明做对了。
-
-**在读的方向：Agent 运行时的可靠性。**
-上下文压缩的触发口径与估算口径不一致时会发生什么、工具调用结果的截断边界、失败恢复与断点续跑。目前在 [vercel/eve](https://github.com/vercel/eve)、[espressif/esp-claw](https://github.com/espressif/esp-claw) 等 Agent 框架上做源码级排查。
-
-> `Claude Code` · `Agent SDK` · `MCP` · `多 Agent 编排` · `Skills / Hooks` · `LLM 应用工程`
+On the agent side that means permission boundaries, context management, and acceptance criteria that can actually be falsified. On the backend side it means idempotency, refuse-to-write guardrails, and data consistency. The failure mode is identical either way: **silent degradation costs far more than a crash.**
 
 ---
 
-## ⚙️ 后端工程
+## 🤖 AI Agent Engineering
 
-跨境电商的订单与物流链路 —— ERP、Shopify、飞书多维表格、内部平台之间的数据流转与一致性。
+Pushing agents from "can call a tool" to "can deliver a whole work item on their own."
 
-**写过的最有价值的代码不是新功能，是护栏。**
+**Permission boundaries belong in the tool layer, not in the prompt.**
+A multi-role pipeline — `researcher → critic → executor → verifier` — where each role gets its own tool allowlist. The critic and the verifier **physically cannot write files**; overreach isn't forbidden by a rule the model may ignore, it's unavailable.
 
-- **先做幂等和拒写护栏，再谈自动化。** 一次 read timeout 不该丢掉一整天的发货登记。
-- **静默降级比崩溃更贵。** 硬编码列号找不到列时返回 0，比抛异常危险得多 —— 没人会发现。
-- **性能优化改的是数据形状，不是机器。** 一次典型收益：内部看板首屏 26.5s → 传输量降 137×，热点接口快 600×，改的是查询与序列化。
+**Acceptance criteria have to be falsifiable.**
+"Make it run" is not a criterion. "Write a failing test that reproduces it, then make it green" is. When every step carries its own verify, an agent can run a task end to end without a human pressing Enter at each turn.
 
-支撑上面这些的是一套长期在真实业务上跑的服务：订单同步、发货前置库存自检、审批流导出等 50+ 个模块。
+**Predict first, then verify.**
+Write down the expected result *before* running anything, and accept on the diff. **Treating a green light as proof is the most expensive illusion there is** — green means nothing crashed, not that anything was done correctly.
 
-> `Python` · `PostgreSQL` · `FastAPI` · `Docker Compose` · `Playwright` · `飞书开放平台` · `Shopify / ERP 集成`
+**What I'm digging into: agent runtime reliability.**
+What happens when a compaction trigger and its size estimator disagree on the ruler; where tool-result truncation boundaries fall; how a run recovers and resumes after failure. Currently doing source-level investigation on agent frameworks including [vercel/eve](https://github.com/vercel/eve) and [espressif/esp-claw](https://github.com/espressif/esp-claw).
+
+> `Claude Code` · `Agent SDK` · `MCP` · `multi-agent orchestration` · `skills / hooks` · `LLM application engineering`
+
+---
+
+## ⚙️ Backend
+
+Order and logistics pipelines for cross-border e-commerce — keeping data consistent as it moves between ERP, Shopify, Feishu Bitable, and internal platforms.
+
+**The most valuable code I've written isn't features. It's guardrails.**
+
+- **Idempotency and refuse-to-write guards come before automation.** One read timeout should never cost a full day of shipping records.
+- **Silent degradation costs more than a crash.** Falling back to `0` when a hardcoded column index misses is far more dangerous than raising — nobody ever finds out.
+- **Performance work changes the shape of the data, not the size of the machine.** A representative result: an internal dashboard's first paint went 26.5s → 137× less data transferred, with the hot endpoint 600× faster — all from query and serialization changes.
+
+Underneath all of that sits a set of services running against live business every day: order sync, pre-shipment stock checks, approval-flow exports, and 50+ other modules.
+
+> `Python` · `PostgreSQL` · `FastAPI` · `Docker Compose` · `Playwright` · `Feishu Open Platform` · `Shopify / ERP integrations`
 
 ---
 
 ## 🌱 Open Source
 
-| 项目 | 内容 | 状态 |
+| Project | What | Status |
 |---|---|---|
-| [microsoft/skill-recorder #72](https://github.com/microsoft/skill-recorder/pull/72) | 零依赖 i18n 基础设施 + 简体中文本地化 | Open · CLA signed |
-| [selfhosted-tracker-eval](https://github.com/lizheng220/selfhosted-tracker-eval) | Cattr / ActivityWatch 自托管评测：loopback-only 端口绑定、独立网络与卷、资源上限 | Public |
+| [microsoft/skill-recorder #72](https://github.com/microsoft/skill-recorder/pull/72) | Dependency-free i18n foundation + Simplified Chinese | Open · CLA signed |
+| [selfhosted-tracker-eval](https://github.com/lizheng220/selfhosted-tracker-eval) | Isolated evaluation sandbox for Cattr / ActivityWatch: loopback-only ports, dedicated networks and volumes, resource caps | Public |
 
-贡献方向：**Agent 运行时的可靠性** —— 上下文管理、工具调用边界、失败恢复。
+Where I want to contribute: **agent runtime reliability** — context management, tool-call boundaries, failure recovery.
 
 ---
 
 ## 📌 About
 
-- 📍 杭州 · Hangzhou
-- 🛠 主力语言 Python，TypeScript 够用
-- 📮 GitHub Issues / PR 是最快的联系方式
+- 📍 Hangzhou, China
+- 🛠 Python as the primary language; TypeScript when the work calls for it
+- 📮 GitHub issues and PRs are the fastest way to reach me
 
-> **能被测试证伪的结论，才值得写进代码。**
+> **A conclusion worth putting in code is one a test could have proven wrong.**
