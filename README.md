@@ -46,10 +46,14 @@ Underneath all of that sits a set of services running against live business ever
 
 | Project | What | Status |
 |---|---|---|
+| [deepseek-ai/deepseek-harness #5573](https://github.com/deepseek-ai/deepseek-harness/discussions/5573) | Root-caused 36 of 48 Windows test failures to one cause — suites creating symlinks without the privilege Windows requires — and measured the fix: `EPERM` failures 36 → 0, with 21 of those tests now *running* on Windows rather than skipped | Reported · maintainer-engaged |
+| [deepseek-harness fs-sandbox](https://github.com/deepseek-ai/deepseek-harness/discussions/5573#discussioncomment-18363593) | Reproduced a containment gap where `ino === 0` collapses filesystem identity and admits paths outside the sandbox; verified the fail-closed guard, corrected the filesystem premise it was reported under, and flagged that the 64-bit file ID is documented as non-unique on ReFS | Verified patch · 100% branch coverage |
 | [microsoft/skill-recorder #72](https://github.com/microsoft/skill-recorder/pull/72) | Dependency-free i18n foundation + Simplified Chinese | Open · CLA signed |
 | [selfhosted-tracker-eval](https://github.com/lizheng220/selfhosted-tracker-eval) | Isolated evaluation sandbox for Cattr / ActivityWatch: loopback-only ports, dedicated networks and volumes, resource caps | Public |
 
-Where I want to contribute: **agent runtime reliability** — context management, tool-call boundaries, failure recovery.
+DeepSeek Harness takes no external pull requests, so that work lands as reproductions, measurements and reviewable patches attached to the thread rather than as commits.
+
+Where I contribute: **agent runtime reliability** — context management, tool-call boundaries, sandbox containment, failure recovery. The method is the same every time: reproduce it in isolation, measure before and after, and state which claims are measured and which are only documented.
 
 ---
 
